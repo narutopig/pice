@@ -1,0 +1,8 @@
+node_modules
+.DS_Store
+.en
+*.log
+.env
+
+# needed for firebase stuff
+serviceKey.json
