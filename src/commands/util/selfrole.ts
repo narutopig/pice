@@ -8,10 +8,18 @@ import { db } from "../../firebase";
 import { GuildSelfRoleData } from "../../types";
 import { hasRoleEmbed } from "./general";
 
+function selfRolesDoc(guildId: string | null) {
+    return db.doc(`/selfroles/${guildId}`);
+}
+
+async function selfRolesData(guildId: string | null) {
+    const docRef = selfRolesDoc(guildId);
+    return (await docRef.get()).data() as GuildSelfRoleData;
+}
+
 // organization stuff
 export async function listRoles(interaction: CommandInteraction) {
-    const docRef = db.doc(`/selfroles/${interaction.guildId}`);
-    const allowedRoles = (await docRef.get()).data() as GuildSelfRoleData;
+    const allowedRoles = await selfRolesData(interaction.guildId);
     const guild = interaction.guild;
     const rolesReqs = allowedRoles.roles.map((id) => guild?.roles.fetch(id));
     const roles = await Promise.all(rolesReqs);
@@ -27,9 +35,8 @@ export async function listRoles(interaction: CommandInteraction) {
 }
 
 export async function giveRole(interaction: CommandInteraction) {
-    const docRef = db.doc(`/selfroles/${interaction.guildId}`);
     // list of allowed role ids
-    const allowedRoles = (await docRef.get()).data() as GuildSelfRoleData;
+    const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
     if (!allowedRoles.roles.includes(roleId)) {
         const embed = errorEmbed({
@@ -63,9 +70,8 @@ export async function giveRole(interaction: CommandInteraction) {
 }
 
 export async function removeRole(interaction: CommandInteraction) {
-    const docRef = db.doc(`/selfroles/${interaction.guildId}`);
     // list of allowed role ids
-    const allowedRoles = (await docRef.get()).data() as GuildSelfRoleData;
+    const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
     if (!allowedRoles.roles.includes(roleId)) {
         const embed = errorEmbed({
@@ -102,8 +108,17 @@ export async function addRole(interaction: CommandInteraction) {
     hasRoleEmbed(interaction, "MANAGE_ROLES");
 
     const docRef = db.doc(`/selfroles/${interaction.guildId}`);
-    const allowedRoles = (await docRef.get()).data() as GuildSelfRoleData;
+    const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
+    if (allowedRoles.roles.includes(roleId)) {
+        return await interaction.reply({
+            embeds: [
+                errorEmbed({
+                    description: "This role is already in the self roles list",
+                }),
+            ],
+        });
+    }
     try {
         await docRef.update({ roles: [...allowedRoles.roles, roleId] });
         const embed = successEmbed({
@@ -123,8 +138,17 @@ export async function deleteRole(interaction: CommandInteraction) {
     hasRoleEmbed(interaction, "MANAGE_ROLES");
 
     const docRef = db.doc(`/selfroles/${interaction.guildId}`);
-    const allowedRoles = (await docRef.get()).data() as GuildSelfRoleData;
+    const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
+    if (!allowedRoles.roles.includes(roleId)) {
+        return await interaction.reply({
+            embeds: [
+                errorEmbed({
+                    description: "This role is not in the self roles list",
+                }),
+            ],
+        });
+    }
     try {
         await docRef.update({
             roles: allowedRoles.roles.filter((r) => r !== roleId),

@@ -74,6 +74,7 @@ module.exports = {
                 break;
             case "remove":
                 removeRole(interaction);
+                break;
             case "add":
                 addRole(interaction);
                 break;
