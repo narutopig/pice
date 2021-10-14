@@ -1,6 +1,12 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { listRoles, giveRole, addRole, removeRole } from "./util/selfrole";
+import {
+    listRoles,
+    giveRole,
+    addRole,
+    deleteRole,
+    removeRole,
+} from "./util/selfrole";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,6 +30,17 @@ module.exports = {
         )
         .addSubcommand((subcommand) =>
             subcommand
+                .setName("remove")
+                .setDescription("Remove a role from yourself")
+                .addStringOption((option) =>
+                    option
+                        .setName("roleid")
+                        .setDescription("ID of the role")
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
                 .setName("add")
                 .setDescription("Add a role to the self roles list")
                 .addStringOption((option) =>
@@ -35,8 +52,8 @@ module.exports = {
         )
         .addSubcommand((subcommand) =>
             subcommand
-                .setName("remove")
-                .setDescription("Remove a role from the self roles list")
+                .setName("delete")
+                .setDescription("Delete a role from the self roles list")
                 .addStringOption((option) =>
                     option
                         .setName("roleid")
@@ -55,11 +72,13 @@ module.exports = {
             case "give":
                 giveRole(interaction);
                 break;
+            case "remove":
+                removeRole(interaction);
             case "add":
                 addRole(interaction);
                 break;
-            case "remove":
-                removeRole(interaction);
+            case "delete":
+                deleteRole(interaction);
                 break;
         }
     },

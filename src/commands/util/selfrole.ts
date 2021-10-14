@@ -62,6 +62,42 @@ export async function giveRole(interaction: CommandInteraction) {
     }
 }
 
+export async function removeRole(interaction: CommandInteraction) {
+    const docRef = db.doc(`/selfroles/${interaction.guildId}`);
+    // list of allowed role ids
+    const allowedRoles = (await docRef.get()).data() as GuildSelfRoleData;
+    const roleId = interaction.options.getString("roleid", true);
+    if (!allowedRoles.roles.includes(roleId)) {
+        const embed = errorEmbed({
+            description: "You cannot remove this role",
+        });
+        return await interaction.reply({ embeds: [embed] });
+    }
+    const role = await interaction.guild?.roles.fetch(roleId ?? "");
+    if (role) {
+        try {
+            await (interaction.member?.roles as GuildMemberRoleManager).remove(
+                roleId
+            );
+            const embed = successEmbed({
+                description: `Removed role ${roleId}`,
+            });
+            return await interaction.reply({ embeds: [embed] });
+        } catch (err) {
+            console.error(err);
+            const embed = errorEmbed({
+                description: "Could not remove this role",
+            });
+            return await interaction.reply({ embeds: [embed] });
+        }
+    } else {
+        const embed = errorEmbed({
+            description: "This role does not exist",
+        });
+        return await interaction.reply({ embeds: [embed] });
+    }
+}
+
 export async function addRole(interaction: CommandInteraction) {
     hasRoleEmbed(interaction, "MANAGE_ROLES");
 
@@ -83,7 +119,7 @@ export async function addRole(interaction: CommandInteraction) {
     }
 }
 
-export async function removeRole(interaction: CommandInteraction) {
+export async function deleteRole(interaction: CommandInteraction) {
     hasRoleEmbed(interaction, "MANAGE_ROLES");
 
     const docRef = db.doc(`/selfroles/${interaction.guildId}`);
@@ -94,7 +130,7 @@ export async function removeRole(interaction: CommandInteraction) {
             roles: allowedRoles.roles.filter((r) => r !== roleId),
         });
         const embed = successEmbed({
-            description: `Removed role ${roleId} to the self roles list`,
+            description: `Deleted role ${roleId} to the self roles list`,
         });
         return await interaction.reply({ embeds: [embed] });
     } catch (err) {
