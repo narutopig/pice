@@ -9,7 +9,7 @@ module.exports = {
         .setDescription("Kick someone")
         .addMentionableOption((option) =>
             option
-                .setName("target")
+                .setName("member")
                 .setDescription("The user to kick")
                 .setRequired(true)
         )
@@ -24,7 +24,7 @@ module.exports = {
 
         try {
             const target = interaction.options.getMentionable(
-                "target"
+                "member"
             ) as GuildMember;
             const reason = interaction.options.getString("reason");
             await target.kick(reason ?? "No reason given.");

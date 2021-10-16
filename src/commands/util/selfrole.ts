@@ -2,27 +2,31 @@ import {
     CommandInteraction,
     MessageEmbed,
     GuildMemberRoleManager,
+    Guild,
 } from "discord.js";
 import { errorEmbed, successEmbed } from "../../embeds";
 import { db } from "../../firebase";
-import { GuildSelfRoleData } from "../../types";
+import { GuildData } from "../../types";
 import { hasRoleEmbed } from "./general";
 
 function selfRolesDoc(guildId: string | null) {
-    return db.doc(`/selfroles/${guildId}`);
+    return db.doc(`/guilds/${guildId}`);
 }
 
 async function selfRolesData(guildId: string | null) {
     const docRef = selfRolesDoc(guildId);
-    return (await docRef.get()).data() as GuildSelfRoleData;
+    return (await docRef.get()).data() as GuildData;
+}
+
+async function fetchRoles(guild: Guild, roles: string[]) {
+    return await Promise.all(roles.map((id) => guild.roles.fetch(id)));
 }
 
 // organization stuff
 export async function listRoles(interaction: CommandInteraction) {
+    if (!interaction.guild) return;
     const allowedRoles = await selfRolesData(interaction.guildId);
-    const guild = interaction.guild;
-    const rolesReqs = allowedRoles.roles.map((id) => guild?.roles.fetch(id));
-    const roles = await Promise.all(rolesReqs);
+    const roles = await fetchRoles(interaction.guild, allowedRoles.selfroles);
     const embed = new MessageEmbed()
         .setTitle("Self Roles")
         .addField(
@@ -38,7 +42,7 @@ export async function giveRole(interaction: CommandInteraction) {
     // list of allowed role ids
     const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
-    if (!allowedRoles.roles.includes(roleId)) {
+    if (!allowedRoles.selfroles.includes(roleId)) {
         const embed = errorEmbed({
             description: "You cannot give yourself this role",
         });
@@ -73,7 +77,7 @@ export async function removeRole(interaction: CommandInteraction) {
     // list of allowed role ids
     const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
-    if (!allowedRoles.roles.includes(roleId)) {
+    if (!allowedRoles.selfroles.includes(roleId)) {
         const embed = errorEmbed({
             description: "You cannot remove this role",
         });
@@ -110,7 +114,7 @@ export async function addRole(interaction: CommandInteraction) {
     const docRef = db.doc(`/selfroles/${interaction.guildId}`);
     const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
-    if (allowedRoles.roles.includes(roleId)) {
+    if (allowedRoles.selfroles.includes(roleId)) {
         return await interaction.reply({
             embeds: [
                 errorEmbed({
@@ -120,7 +124,7 @@ export async function addRole(interaction: CommandInteraction) {
         });
     }
     try {
-        await docRef.update({ roles: [...allowedRoles.roles, roleId] });
+        await docRef.update({ roles: [...allowedRoles.selfroles, roleId] });
         const embed = successEmbed({
             description: `Added role ${roleId} to the self roles list`,
         });
@@ -140,7 +144,7 @@ export async function deleteRole(interaction: CommandInteraction) {
     const docRef = db.doc(`/selfroles/${interaction.guildId}`);
     const allowedRoles = await selfRolesData(interaction.guildId);
     const roleId = interaction.options.getString("roleid", true);
-    if (!allowedRoles.roles.includes(roleId)) {
+    if (!allowedRoles.selfroles.includes(roleId)) {
         return await interaction.reply({
             embeds: [
                 errorEmbed({
@@ -151,7 +155,7 @@ export async function deleteRole(interaction: CommandInteraction) {
     }
     try {
         await docRef.update({
-            roles: allowedRoles.roles.filter((r) => r !== roleId),
+            roles: allowedRoles.selfroles.filter((r) => r !== roleId),
         });
         const embed = successEmbed({
             description: `Deleted role ${roleId} to the self roles list`,

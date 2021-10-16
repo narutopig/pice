@@ -9,7 +9,7 @@ module.exports = {
         .setDescription("Ban someone")
         .addMentionableOption((option) =>
             option
-                .setName("target")
+                .setName("member")
                 .setDescription("The user to ban")
                 .setRequired(true)
         )
@@ -24,7 +24,7 @@ module.exports = {
 
         try {
             const target = interaction.options.getMentionable(
-                "target"
+                "member"
             ) as GuildMember;
             const reason = interaction.options.getString("reason");
             await target.ban({ reason: reason ?? "No reason given." });
