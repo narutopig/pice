@@ -1,7 +1,10 @@
 import { credential, firestore } from "firebase-admin";
 import { initializeApp } from "firebase-admin/app";
+import { config } from "dotenv";
 
-const serviceKey = require("./serviceKey.json");
+config();
+
+const serviceKey = JSON.parse(process.env.SERVICEKEYJSON ?? "{}");
 
 initializeApp({ credential: credential.cert(serviceKey) });
 
