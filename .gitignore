@@ -3,6 +3,8 @@ node_modules
 .en
 *.log
 .env
+package-lock.json
+# do i really need this
 
 # needed for firebase stuff
 serviceKey.json
