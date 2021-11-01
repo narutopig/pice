@@ -20,7 +20,7 @@ const commands = loadCommands();
 
 async function refresh() {
     try {
-        await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
+        await rest.put(Routes.applicationCommands(clientId), {
             body: commandData,
         });
 
