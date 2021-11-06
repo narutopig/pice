@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'pice'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BA1297EEB17A47EE901D1DF0338B0A12 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AE10C30630EA4FFDAC9F069D3CB7EC51 }}
           package: .
