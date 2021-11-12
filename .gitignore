@@ -4,6 +4,7 @@ node_modules
 *.log
 .env
 package-lock.json
+build
 # do i really need this
 
 # needed for firebase stuff

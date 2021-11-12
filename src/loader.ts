@@ -2,15 +2,16 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import fs from "fs";
 import path from "path";
 import { Command } from "./types";
+import { resolve } from "path";
 
-export function resolve(fileName: string): string {
-    return path.resolve(process.cwd(), fileName);
-}
-
-export function loadData(): SlashCommandBuilder[] {
+function getFiles() {
     const cfs = fs
-        .readdirSync(resolve("./src/commands/"))
-        .filter((file) => file.endsWith(".ts")); // Command files
+        .readdirSync(resolve(__dirname, "commands/"))
+        .filter((file) => file.endsWith(".ts") || file.endsWith(".js")); // Command files
+    return cfs;
+}
+export function loadData(): SlashCommandBuilder[] {
+    const cfs = getFiles();
 
     const res = [];
 
@@ -24,9 +25,7 @@ export function loadData(): SlashCommandBuilder[] {
 }
 
 export function loadCommands(): Map<string, Command> {
-    const cfs = fs
-        .readdirSync(resolve("./src/commands/"))
-        .filter((file) => file.endsWith(".ts")); // Command files
+    const cfs = getFiles();
 
     const res = new Map<string, Command>();
 
