@@ -4,9 +4,19 @@ import { config } from "dotenv";
 
 config();
 
-const serviceKey = JSON.parse(process.env.SERVICEKEYJSON ?? "{}");
+const projectId = process.env.PROJECT_ID;
+const clientEmail = process.env.CLIENT_EMAIL;
+const privateKey = process.env.PRIVATE_KEY
+    ? process.env.PRIVATE_KEY.replace(/\\n/g, "\n")
+    : "";
 
-initializeApp({ credential: credential.cert(serviceKey) });
+initializeApp({
+    credential: credential.cert({
+        projectId: projectId,
+        clientEmail: clientEmail,
+        privateKey: privateKey,
+    }),
+});
 
 export async function readFile(file: string) {
     const doc = await db.doc(file).get();
