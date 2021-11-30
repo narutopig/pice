@@ -30,7 +30,6 @@ async function refresh() {
 }
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
-    // i mean could be undefined but idc
     const data = await readFile(`/guilds/${newState.guild.id}`);
     const roleId = data ? data.vcBanRoleId : "";
     const member = newState.member;
@@ -39,14 +38,18 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
     }
 });
 
-client.on("interactionCreate", (interaction) => {
+client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand() || !interaction.guild) {
         return;
     }
 
     const { commandName } = interaction;
 
-    commands.get(commandName)?.execute(interaction);
+    try {
+        await commands.get(commandName)?.execute(interaction);
+    } catch (err) {
+        console.error(err);
+    }
 });
 
 client.on("guildCreate", async (guild) => {
